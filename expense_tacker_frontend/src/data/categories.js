@@ -119,7 +119,7 @@ export function getCategoryById(id) {
   return {
     id,
     name: id,
-    icon: 'DollarSign',
+    icon: 'Banknote',
     color: '#64748b',
     bgColor: '#f1f5f9',
     type: 'expense',

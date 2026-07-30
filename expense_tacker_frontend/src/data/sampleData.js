@@ -6,8 +6,8 @@ function getOffsetDate(daysOffset) {
 
 export const INITIAL_BUDGET = {
   monthlyTotalBudget: 3500,
-  currencySymbol: '$',
-  currencyCode: 'USD',
+  currencySymbol: '₦',
+  currencyCode: 'NGN',
   categoryBudgets: {
     food: 600,
     groceries: 500,

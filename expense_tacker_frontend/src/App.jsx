@@ -6,7 +6,7 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TransactionList } from './components/TransactionList';
 import { TransactionFormModal } from './components/TransactionFormModal';
 import { BudgetModal } from './components/BudgetModal';
-import { ExportImportModal } from './components/ExportImportModal';
+// import { ExportImportModal } from './components/ExportImportModal';
 import { SAMPLE_TRANSACTIONS, INITIAL_BUDGET } from './data/sampleData';
 import { CheckCircle, AlertCircle, Info } from 'lucide-react';
 
@@ -195,14 +195,14 @@ export default function App() {
           showToast('Budget limits saved');
         }}
       />
-
+{/* 
       <ExportImportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         transactions={transactions}
         budget={budget}
         onImportData={handleImportData}
-      />
+      /> */}
     </div>
   );
 }

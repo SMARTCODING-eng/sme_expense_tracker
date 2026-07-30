@@ -17,9 +17,16 @@ import {
   Banknote,
   ArrowRightLeft,
   Smartphone,
-  NairaSign,
 } from 'lucide-react';
 
+const NairaIcon = ({ className = "", ...props }) => (
+    <span
+        className={'font-bold ${className}'}
+        {...props}
+    >
+        
+    </span>
+);
 export const CategoryIcon = ({ name, ...props }) => {
   switch (name) {
     case 'Utensils':
@@ -57,7 +64,7 @@ export const CategoryIcon = ({ name, ...props }) => {
     case 'MoreHorizontal':
       return <MoreHorizontal {...props} />;
     default:
-      return <DollarSign {...props} />;
+      return <NairaIcon {...props} />;
   }
 };
 

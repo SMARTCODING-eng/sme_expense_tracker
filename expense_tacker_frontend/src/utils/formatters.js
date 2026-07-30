@@ -1,4 +1,4 @@
-export function formatCurrency(amount, symbol = '$') {
+export function formatCurrency(amount, symbol = '₦') {
   const isNegative = amount < 0;
   const absAmount = Math.abs(amount);
   const formatted = new Intl.NumberFormat('en-US', {
