@@ -1,0 +1,127 @@
+export const CATEGORIES = [
+  {
+    id: 'food',
+    name: 'Food & Dining',
+    icon: 'Utensils',
+    color: '#f97316',
+    bgColor: '#ffedd5',
+    type: 'expense',
+  },
+  {
+    id: 'groceries',
+    name: 'Groceries',
+    icon: 'ShoppingBag',
+    color: '#10b981',
+    bgColor: '#d1fae5',
+    type: 'expense',
+  },
+  {
+    id: 'housing',
+    name: 'Housing & Rent',
+    icon: 'Home',
+    color: '#6366f1',
+    bgColor: '#e0e7ff',
+    type: 'expense',
+  },
+  {
+    id: 'transport',
+    name: 'Transportation',
+    icon: 'Car',
+    color: '#06b6d4',
+    bgColor: '#cffaff',
+    type: 'expense',
+  },
+  {
+    id: 'utilities',
+    name: 'Utilities & Bills',
+    icon: 'Zap',
+    color: '#eab308',
+    bgColor: '#fef9c3',
+    type: 'expense',
+  },
+  {
+    id: 'entertainment',
+    name: 'Entertainment',
+    icon: 'Film',
+    color: '#ec4899',
+    bgColor: '#fce7f3',
+    type: 'expense',
+  },
+  {
+    id: 'shopping',
+    name: 'Shopping',
+    icon: 'ShoppingBag',
+    color: '#a855f7',
+    bgColor: '#f3e8ff',
+    type: 'expense',
+  },
+  {
+    id: 'healthcare',
+    name: 'Health & Medical',
+    icon: 'HeartPulse',
+    color: '#ef4444',
+    bgColor: '#fee2e2',
+    type: 'expense',
+  },
+  {
+    id: 'education',
+    name: 'Education & Courses',
+    icon: 'GraduationCap',
+    color: '#3b82f6',
+    bgColor: '#dbeafe',
+    type: 'expense',
+  },
+  {
+    id: 'salary',
+    name: 'Salary & Wages',
+    icon: 'Wallet',
+    color: '#16a34a',
+    bgColor: '#dcfce7',
+    type: 'income',
+  },
+  {
+    id: 'freelance',
+    name: 'Freelance & Side Gig',
+    icon: 'Briefcase',
+    color: '#0d9488',
+    bgColor: '#ccfbf1',
+    type: 'income',
+  },
+  {
+    id: 'investments',
+    name: 'Investments & Dividends',
+    icon: 'TrendingUp',
+    color: '#2563eb',
+    bgColor: '#dbeafe',
+    type: 'income',
+  },
+  {
+    id: 'other_income',
+    name: 'Other Income',
+    icon: 'Coins',
+    color: '#059669',
+    bgColor: '#d1fae5',
+    type: 'income',
+  },
+  {
+    id: 'other_expense',
+    name: 'Other Expense',
+    icon: 'MoreHorizontal',
+    color: '#64748b',
+    bgColor: '#f1f5f9',
+    type: 'expense',
+  }
+];
+
+export function getCategoryById(id) {
+  const found = CATEGORIES.find(c => c.id === id);
+  if (found) return found;
+  return {
+    id,
+    name: id,
+    icon: 'DollarSign',
+    color: '#64748b',
+    bgColor: '#f1f5f9',
+    type: 'expense',
+  };
+}
