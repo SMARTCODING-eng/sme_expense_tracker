@@ -1,19 +1,15 @@
 import React from 'react';
-import { PlusCircle, Download, RotateCcw, WalletCards, Settings } from 'lucide-react';
+import { PlusCircle, RotateCcw, WalletCards, Settings, Server, RefreshCw } from 'lucide-react';
 
 export const Header = ({
   budget,
-  onUpdateBudget,
   onOpenAddModal,
-  onOpenExportModal,
   onOpenBudgetModal,
   onResetData,
+  isBackendConnected,
+  onSyncBackend,
+  isSyncing,
 }) => {
-  const currencies = [
-    { symbol: '₦', code: 'NGN' },
-    
-  ];
-
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
@@ -24,34 +20,40 @@ export const Header = ({
               <WalletCards className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap">
                 <h1 className="text-xl font-bold text-slate-900 tracking-tight">Expense Tracker</h1>
                 <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-100">
                   Pro
                 </span>
+                
+                {/* Django DRF & PostgreSQL Backend Status Badge */}
+                <button
+                  onClick={onSyncBackend}
+                  disabled={isSyncing}
+                  title={isBackendConnected ? "Connected to Django REST Framework (PostgreSQL). Click to re-sync." : "Django Backend server offline. Using local persistence fallback. Click to retry connection."}
+                  className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
+                    isBackendConnected
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                  }`}
+                >
+                  <Server className="w-3 h-3" />
+                  <span>{isBackendConnected ? 'Django DRF API (PostgreSQL)' : 'Offline Local Fallback'}</span>
+                  <RefreshCw className={`w-3 h-3 shrink-0 ${isSyncing ? 'animate-spin text-indigo-600' : 'opacity-70'}`} />
+                </button>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Smart personal finance & budget management</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Full-stack financial management with Django REST API & PostgreSQL persistence
+              </p>
             </div>
           </div>
 
           {/* Controls & Actions */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Currency Selector */}
-            <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
-              {currencies.map((c) => (
-                <button
-                  key={c.code}
-                  onClick={() => onUpdateBudget({ currencySymbol: c.symbol, currencyCode: c.code })}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                    budget.currencySymbol === c.symbol
-                      ? 'bg-white text-indigo-600 shadow-2xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                  title={`${c.code} (${c.symbol})`}
-                >
-                  {c.symbol}
-                </button>
-              ))}
+            {/* Currency Badge - Fixed to Nigerian Naira */}
+            <div className="inline-flex items-center space-x-1 bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-200">
+              <span className="text-emerald-700 font-extrabold text-sm">₦</span>
+              <span>NGN (Naira)</span>
             </div>
 
             {/* Budget Settings Button */}
@@ -61,15 +63,6 @@ export const Header = ({
             >
               <Settings className="w-3.5 h-3.5 text-slate-500" />
               <span>Budget Limits</span>
-            </button>
-
-            {/* Export / Data Button */}
-            <button
-              onClick={onOpenExportModal}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-200"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export/Import</span>
             </button>
 
             {/* Reset Data Button */}

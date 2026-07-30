@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { OverviewCards } from './components/OverviewCards';
 import { BudgetOverview } from './components/BudgetOverview';
@@ -6,15 +6,18 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TransactionList } from './components/TransactionList';
 import { TransactionFormModal } from './components/TransactionFormModal';
 import { BudgetModal } from './components/BudgetModal';
-// import { ExportImportModal } from './components/ExportImportModal';
 import { SAMPLE_TRANSACTIONS, INITIAL_BUDGET } from './data/sampleData';
-import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { apiService } from './services/api';
+import { CheckCircle, AlertCircle, Info, Database } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY_TRANSACTIONS = 'expense_tracker_transactions_js_v1';
 const LOCAL_STORAGE_KEY_BUDGET = 'expense_tracker_budget_js_v1';
 
 export default function App() {
-  // Load transactions state
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Load initial transactions state
   const [transactions, setTransactions] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY_TRANSACTIONS);
@@ -28,7 +31,7 @@ export default function App() {
     return SAMPLE_TRANSACTIONS;
   });
 
-  // Load budget config state
+  // Load initial budget config state
   const [budget, setBudget] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY_BUDGET);
@@ -45,17 +48,52 @@ export default function App() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Toast notification state
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
-  // Sync to localStorage
+  // Sync state with Django REST API Backend
+  const syncWithBackend = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const isAlive = await apiService.checkHealth();
+      setIsBackendConnected(isAlive);
+
+      if (isAlive) {
+        const [fetchedTx, fetchedBudget] = await Promise.all([
+          apiService.fetchTransactions(),
+          apiService.fetchBudget().catch(() => null),
+        ]);
+
+        if (fetchedTx && Array.isArray(fetchedTx) && fetchedTx.length > 0) {
+          setTransactions(fetchedTx);
+        }
+        if (fetchedBudget) {
+          setBudget((prev) => ({ ...prev, ...fetchedBudget }));
+        }
+        showToast('Synchronized with Django REST Framework (PostgreSQL)!', 'success');
+      } else {
+        showToast('Django API offline. Operating in client fallback mode.', 'info');
+      }
+    } catch (err) {
+      console.warn('Backend connection failed:', err);
+      setIsBackendConnected(false);
+      showToast('Backend offline. Operating in client fallback mode.', 'info');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncWithBackend();
+  }, [syncWithBackend]);
+
+  // Sync local changes to localStorage for offline persistence
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
@@ -72,35 +110,81 @@ export default function App() {
     }
   }, [budget]);
 
-  // Transaction Actions
-  const handleSaveTransaction = (data) => {
+  // Transaction Actions (with Django API integration)
+  const handleSaveTransaction = async (data) => {
     if (data.id) {
-      // Edit
+      // Edit existing transaction
       setTransactions((prev) =>
         prev.map((t) => (t.id === data.id ? { ...data, id: data.id } : t))
       );
-      showToast('Transaction updated successfully!');
+
+      if (isBackendConnected) {
+        try {
+          await apiService.updateTransaction(data.id, data);
+          showToast('Updated in PostgreSQL database!');
+        } catch (err) {
+          console.error('API update failed:', err);
+          showToast('Updated locally (API error)', 'info');
+        }
+      } else {
+        showToast('Transaction updated successfully!');
+      }
     } else {
-      // Add
-      const newTransaction = {
-        ...data,
-        id: 'tx-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
-      };
-      setTransactions((prev) => [newTransaction, ...prev]);
-      showToast('New transaction added!');
+      // Add new transaction
+      const tempId = 'tx-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6);
+      const newTx = { ...data, id: tempId };
+
+      setTransactions((prev) => [newTx, ...prev]);
+
+      if (isBackendConnected) {
+        try {
+          const created = await apiService.createTransaction(data);
+          // Replace temp item with server response
+          setTransactions((prev) => prev.map((t) => (t.id === tempId ? created : t)));
+          showToast('Saved to PostgreSQL database!');
+        } catch (err) {
+          console.error('API create failed:', err);
+          showToast('Saved locally (API error)', 'info');
+        }
+      } else {
+        showToast('New transaction added!');
+      }
     }
   };
 
-  const handleDeleteTransaction = (id) => {
+  const handleDeleteTransaction = async (id) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       setTransactions((prev) => prev.filter((t) => t.id !== id));
-      showToast('Transaction removed', 'info');
+
+      if (isBackendConnected) {
+        try {
+          await apiService.deleteTransaction(id);
+          showToast('Deleted from PostgreSQL database', 'info');
+        } catch (err) {
+          console.error('API delete failed:', err);
+          showToast('Removed locally', 'info');
+        }
+      } else {
+        showToast('Transaction removed', 'info');
+      }
     }
   };
 
-  const handleUpdateBudget = (newBudget) => {
-    setBudget((prev) => ({ ...prev, ...newBudget }));
-    showToast('Budget settings updated');
+  const handleUpdateBudget = async (newBudget) => {
+    const updated = { ...budget, ...newBudget };
+    setBudget(updated);
+
+    if (isBackendConnected) {
+      try {
+        await apiService.updateBudget(updated);
+        showToast('Budget saved to PostgreSQL database!');
+      } catch (err) {
+        console.error('API budget update failed:', err);
+        showToast('Budget updated locally', 'info');
+      }
+    } else {
+      showToast('Budget settings updated');
+    }
   };
 
   const handleResetData = () => {
@@ -109,11 +193,6 @@ export default function App() {
       setBudget(INITIAL_BUDGET);
       showToast('Reset to initial sample data', 'info');
     }
-  };
-
-  const handleImportData = (imported) => {
-    setTransactions(imported);
-    showToast(`Restored ${imported.length} transactions from backup`);
   };
 
   const handleOpenEdit = (tx) => {
@@ -143,13 +222,42 @@ export default function App() {
         budget={budget}
         onUpdateBudget={handleUpdateBudget}
         onOpenAddModal={handleOpenAdd}
-        onOpenExportModal={() => setIsExportModalOpen(true)}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
         onResetData={handleResetData}
+        isBackendConnected={isBackendConnected}
+        onSyncBackend={syncWithBackend}
+        isSyncing={isSyncing}
       />
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* Backend Connectivity Info Card */}
+        <div className="p-4 bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-indigo-500/20 rounded-xl text-indigo-300 border border-indigo-500/30">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-sm">Django REST Framework + PostgreSQL Engine</span>
+                <span className="text-[10px] uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md font-bold border border-emerald-500/30">
+                  Swagger OpenAPI 3 Ready
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Full CRUD endpoints (`/api/transactions/`, `/api/budget/`, `/api/analytics/`, `/api/docs/`) connected to frontend state.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={syncWithBackend}
+            disabled={isSyncing}
+            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-xl border border-white/20 transition-colors shrink-0"
+          >
+            {isSyncing ? 'Syncing...' : 'Re-verify API Status'}
+          </button>
+        </div>
+
         {/* Overview Stats Cards */}
         <OverviewCards transactions={transactions} budget={budget} />
 
@@ -191,18 +299,10 @@ export default function App() {
         onClose={() => setIsBudgetModalOpen(false)}
         budget={budget}
         onSaveBudget={(newBudget) => {
-          setBudget(newBudget);
+          handleUpdateBudget(newBudget);
           showToast('Budget limits saved');
         }}
       />
-{/* 
-      <ExportImportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        transactions={transactions}
-        budget={budget}
-        onImportData={handleImportData}
-      /> */}
     </div>
   );
 }
