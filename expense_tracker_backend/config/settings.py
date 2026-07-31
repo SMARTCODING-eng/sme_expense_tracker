@@ -78,14 +78,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
 
+db_url = os.getenv('DATABASE_URL')
+if not db_url:
+    if not DEBUG:
+        raise ImproperlyConfigured("DATABSE_URL environment variable is required in production.")
+DATABASES = dj_database_url.parse(db_url, conn_max_age=600, conn_health_checks=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
