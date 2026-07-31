@@ -11,6 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'expense_tracker_backend.settings')
+# Ensure the settings module matches the project's package layout.
+# The project's settings live in the `config` package, so use `config.settings`.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 application = get_wsgi_application()
