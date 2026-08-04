@@ -18,8 +18,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('monthly_total_budget', models.DecimalField(decimal_places=2, default=3500.0, max_digits=12)),
-                ('currency_symbol', models.CharField(default='$', max_length=5)),
-                ('currency_code', models.CharField(default='USD', max_length=5)),
+                ('currency_symbol', models.CharField(default='₦', max_length=5)),
+                ('currency_code', models.CharField(default='NGN', max_length=5)),
                 ('category_budgets', models.JSONField(blank=True, default=dict)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],
