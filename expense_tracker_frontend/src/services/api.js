@@ -2,10 +2,8 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-
-console.log("API_BASE_URL =", API_BASE_URL);
-console.log("ENV =", import.meta.env);
-
+console.log(import.meta.env.VITE_API_BASE_URL);
+console.log(import.meta.env);
 /**
  * Format JS transaction object into Django REST Framework expected payload
  */
