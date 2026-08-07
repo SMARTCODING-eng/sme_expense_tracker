@@ -2,8 +2,8 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-console.log(import.meta.env.VITE_API_BASE_URL);
-console.log(import.meta.env);
+// console.log(import.meta.env.VITE_API_BASE_URL);
+// console.log(import.meta.env);
 /**
  * Format JS transaction object into Django REST Framework expected payload
  */
@@ -21,9 +21,7 @@ function toServerTransaction(tx) {
   };
 }
 
-/**
- * Format Django server transaction response into JS camelCase object
- */
+
 function toClientTransaction(tx) {
   return {
     id: tx.id,
@@ -67,6 +65,44 @@ export const apiService = {
   /**
    * Check connection status to Django backend
    */
+  async register(email, password, fullname) {
+    const res = await fetch(`${API_BASE_URL}/auth/register/`,{
+      method: 'POST',
+      headers: { 'Conten-Type': 'application/json' },
+      body: JSON.stringify({ email, password, full_name: fullName }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = err.email ? err.email[0] : (err.detail || 'Registration failed.');
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('django_auth_token', data.token);
+    }
+    return data;
+  },
+
+
+  async login(email, password) {
+    const res = await fetch(`${API_BASE_URL}/auth/login/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = err.detail || (err.email ? err.email[0] : 'Invalid login credentials.');
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('django_auth_token', data.token);
+    }
+    return data;
+  },
+
+
   async checkHealth() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories/`, { method: 'GET' });
