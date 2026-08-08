@@ -6,16 +6,26 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TransactionList } from './components/TransactionList';
 import { TransactionFormModal } from './components/TransactionFormModal';
 import { BudgetModal } from './components/BudgetModal';
+import { LandingPage } from './components/LandingPage';
+import { AuthModal } from './components/AuthModal';
+import { SwaggerDocsModal } from './components/SwaggerDocsModal';
 import { SAMPLE_TRANSACTIONS, INITIAL_BUDGET } from './data/sampleData';
 import { apiService } from './services/api';
-import { CheckCircle, AlertCircle, Info, Database } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info, Database, PlusCircle } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY_TRANSACTIONS = 'expense_tracker_transactions_js_v1';
 const LOCAL_STORAGE_KEY_BUDGET = 'expense_tracker_budget_js_v1';
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('landing'); // 'landing' | 'app'
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Auth & Docs modal states
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'signup'
+  const [isSwaggerModalOpen, setIsSwaggerModalOpen] = useState(false);
 
   // Load initial transactions state
   const [transactions, setTransactions] = useState(() => {
@@ -57,6 +67,37 @@ export default function App() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const handleOpenSignUp = () => {
+    setAuthModalMode('signup');
+    setIsAuthModalOpen(true);
+  };
+
+  const handleOpenLogin = () => {
+    setAuthModalMode('login');
+    setIsAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = (user, message) => {
+    setCurrentUser(user);
+    setCurrentView('app');
+    showToast(message, 'success');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiService.logout();
+    } catch (e) {
+      console.warn('Logout error:', e);
+    }
+    setCurrentUser(null);
+    showToast('Logged out successfully from Django Accounts session.', 'info');
+  };
+
+  const handleExploreDemo = () => {
+    setCurrentView('app');
+    showToast('Entered interactive demo mode!', 'info');
+  };
+
   // Sync state with Django REST API Backend
   const syncWithBackend = useCallback(async () => {
     setIsSyncing(true);
@@ -91,6 +132,11 @@ export default function App() {
 
   useEffect(() => {
     syncWithBackend();
+    apiService.getCurrentUser().then((user) => {
+      if (user) {
+        setCurrentUser(user);
+      }
+    }).catch(() => {});
   }, [syncWithBackend]);
 
   // Sync local changes to localStorage for offline persistence
@@ -205,6 +251,44 @@ export default function App() {
     setIsFormModalOpen(true);
   };
 
+  if (currentView === 'landing') {
+    return (
+      <>
+        {/* Toast Banner */}
+        {toast && (
+          <div className="fixed bottom-5 right-5 z-50 flex items-center space-x-2 px-4 py-3 bg-slate-900 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-xl animate-in slide-in-from-bottom-5 duration-200">
+            {toast.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+            {toast.type === 'info' && <Info className="w-4 h-4 text-indigo-400 shrink-0" />}
+            {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />}
+            <span>{toast.message}</span>
+          </div>
+        )}
+
+        <LandingPage
+          onExploreDemo={handleExploreDemo}
+          onOpenSignUp={handleOpenSignUp}
+          onOpenLogin={handleOpenLogin}
+          onOpenSwaggerDocs={() => setIsSwaggerModalOpen(true)}
+          isBackendConnected={isBackendConnected}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onAuthSuccess={handleAuthSuccess}
+        />
+
+        <SwaggerDocsModal
+          isOpen={isSwaggerModalOpen}
+          onClose={() => setIsSwaggerModalOpen(false)}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased pb-12">
       {/* Toast Banner */}
@@ -227,10 +311,42 @@ export default function App() {
         isBackendConnected={isBackendConnected}
         onSyncBackend={syncWithBackend}
         isSyncing={isSyncing}
+        onGoToLanding={() => setCurrentView('landing')}
+        onOpenSwaggerDocs={() => setIsSwaggerModalOpen(true)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* Warm Welcome Banner Header Card */}
+        <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-emerald-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="space-y-1 z-10">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl animate-bounce">👋</span>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+                Warm Welcome{currentUser?.name ? `, ${currentUser.name}` : ''}!
+              </h2>
+              <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                🇳🇬 ₦ NGN Active
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Track your daily expenses, monitor monthly category caps, and keep your finances healthy. Your data is synced with Django REST Framework and PostgreSQL.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 z-10 shrink-0">
+            <button
+              onClick={handleOpenAdd}
+              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center space-x-1.5"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Record Transaction</span>
+            </button>
+          </div>
+        </div>
+
         {/* Backend Connectivity Info Card */}
         <div className="p-4 bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
@@ -249,13 +365,21 @@ export default function App() {
               </p>
             </div>
           </div>
-          <button
-            onClick={syncWithBackend}
-            disabled={isSyncing}
-            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-xl border border-white/20 transition-colors shrink-0"
-          >
-            {isSyncing ? 'Syncing...' : 'Re-verify API Status'}
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsSwaggerModalOpen(true)}
+              className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold text-xs rounded-xl border border-emerald-500/40 transition-colors"
+            >
+              Open Swagger Docs
+            </button>
+            <button
+              onClick={syncWithBackend}
+              disabled={isSyncing}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-xl border border-white/20 transition-colors shrink-0"
+            >
+              {isSyncing ? 'Syncing...' : 'Re-verify API Status'}
+            </button>
+          </div>
         </div>
 
         {/* Overview Stats Cards */}
@@ -302,6 +426,18 @@ export default function App() {
           handleUpdateBudget(newBudget);
           showToast('Budget limits saved');
         }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onAuthSuccess={handleAuthSuccess}
+      />
+
+      <SwaggerDocsModal
+        isOpen={isSwaggerModalOpen}
+        onClose={() => setIsSwaggerModalOpen(false)}
       />
     </div>
   );

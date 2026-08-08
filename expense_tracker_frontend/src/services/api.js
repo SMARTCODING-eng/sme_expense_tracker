@@ -2,11 +2,11 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-// console.log(import.meta.env.VITE_API_BASE_URL);
-// console.log(import.meta.env);
-/**
- * Format JS transaction object into Django REST Framework expected payload
- */
+console.log(import.meta.env.VITE_API_BASE_URL);
+console.log(import.meta.env);
+
+//  * Format JS transaction object into Django REST Framework expected payload
+//  */
 function toServerTransaction(tx) {
   return {
     id: tx.id,
@@ -62,13 +62,21 @@ function toServerBudget(b) {
 }
 
 export const apiService = {
+
+  getAuthHeader() {
+
+    // This attach Auth headers if token is stored
+
+    const token = localStorage.getItem('django_auth_toke');
+    return token ? { 'Authorization': `Token ${token}` } : {};
+  },
   /**
    * Check connection status to Django backend
    */
   async register(email, password, fullname) {
-    const res = await fetch(`${API_BASE_URL}/auth/register/`,{
+    const res = await fetch(`${API_BASE_URL}/accounts/register/`, {
       method: 'POST',
-      headers: { 'Conten-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, full_name: fullName }),
     });
     if (!res.ok) {
@@ -85,7 +93,7 @@ export const apiService = {
 
 
   async login(email, password) {
-    const res = await fetch(`${API_BASE_URL}/auth/login/`, {
+    const res = await fetch(`${API_BASE_URL}/accounts/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -102,6 +110,30 @@ export const apiService = {
     return data;
   },
 
+  async logout() {
+    const headers = { 'Content-Type': 'application', ...this.getAuthHeaders() };
+    try {
+      await fetch(`${API_BASE_URL}/accounts/logout/`, {
+        method: 'POST',
+        headers,
+      });
+    } catch (e) {
+
+    } finally {
+      localStorage.removeItem('django_auth_token');
+    }
+    return true;
+  },
+
+  async getCurrentUser() {
+    const token = localStorage.getItem('django_auth_token');
+    if (!token) return null;
+
+    const res = await fetch(`${API_BASE_URL}/accounts/me/`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+    });
+  },
 
   async checkHealth() {
     try {

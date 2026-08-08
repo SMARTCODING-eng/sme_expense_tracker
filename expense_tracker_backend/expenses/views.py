@@ -14,59 +14,10 @@ from .serializers import(
     CategorySerializer, 
     TransactionSerializer, 
     BudgetConfigSerializer,
-    UserRegistrationSerializer,
-    LoginSerializer,
+   
 )
 
-class UserRegistrationView(APIView):
-    permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user =serializer.save()
-            token, _ = Token.objects.get_or_create(user=user)
-            user_data = UserRegistrationSerializer(user).data
-            return Response({
-                'token' : token.key,
-                'user' : user_data,
-                'message' : 'Account created successfully'
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-
-            try:
-                user_obj = User.objects.get(email_iexact=email)
-                user = authenticate(username=user_obj.username, password=password)
-            except User.DoesNotExist:
-                user = None
-
-            if user:
-                token, _ = Token.objects.get_or_create(user=user)
-                user_data = UserRegistrationSerializer(user).data
-                return Response({
-                    'token': token.key,
-                    'user': user_data,
-                    'message': 'login successful'
-                })
-            return Response({'detail': 'Invalid emial or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
-    
-class CurrentUserView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        if request.user.is_authenticated:
-            return Response({'user': UserRegistrationSerializer(request.user).data})
-        return Response({'detail': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 DEFAULT_CATEGORIES = [
