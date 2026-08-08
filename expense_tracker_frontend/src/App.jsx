@@ -275,6 +275,7 @@ export default function App() {
         />
 
         <AuthModal
+          key={authModalMode}
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           initialMode={authModalMode}
@@ -429,6 +430,7 @@ export default function App() {
       />
 
       <AuthModal
+        key={authModalMode}
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}

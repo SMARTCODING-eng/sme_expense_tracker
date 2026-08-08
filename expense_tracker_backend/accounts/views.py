@@ -7,24 +7,22 @@ from django.contrib.auth.models import User
 from .serializers import UserRegistrationSerializer, LoginSerializer, UserSerializer
 
 
-
-
-
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user =serializer.save()
+            user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
             user_data = UserRegistrationSerializer(user).data
             return Response({
-                'token' : token.key,
-                'user' : user_data,
-                'message' : 'Account created successfully!'
+                'token': token.key,
+                'user': user_data,
+                'message': 'Account created successfully!'
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -36,10 +34,14 @@ class LoginView(APIView):
             password = serializer.validated_data['password']
 
             try:
-                user_obj = User.objects.get(email_iexact=email)
-                user = authenticate(username=user_obj.username, password=password)
+                user_obj = User.objects.get(email__iexact=email)
             except User.DoesNotExist:
-                user = None
+                return Response(
+                    {'detail': 'Account does not exist. Please sign up first.'}, 
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            user = authenticate(username=user_obj.username, password=password)
 
             if user:
                 token, _ = Token.objects.get_or_create(user=user)
@@ -47,47 +49,31 @@ class LoginView(APIView):
                 return Response({
                     'token': token.key,
                     'user': user_data,
-                    'message': 'login successful'
-                })
-            return Response({'detail': 'Invalid emial or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
+                    'message': 'Login successful'
+                }, status=status.HTTP_200_OK)
+            
+
+            return Response(
+                {'detail': 'Invalid email or password.'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LogoutView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        if request.user and request.user.is_authenticated:
-            try:
-                request.user.auth_token.delete()
-            except Exception:
-                pass
-            return Response({'message': 'Logged out successfully'})
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, Token.DoesNotExist):
+            pass
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
 
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Token '):
-            token_key = auth_header.split(' ')[1]
-            try:
-                token = Token.objects.get(key=token_key)
-                token.delete()
-            except Token.DoesNotExist:
-                pass
-        return Response({'message': 'Logged out successfully'})
 
- 
 class CurrentUserView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        if request.user and request.user.is_authenticated:
-            return Response({'user': UserRegistrationSerializer(request.user).data})
-
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Token '):
-            token_key = auth_header.split(' ')[1]
-            try:
-                token = Token.objects.get(key=token_key)
-                return Response({'user': UserRegistrationSerializer(token.user).data})
-
-            except Token.DoesNotExist:
-                pass
-        return Response({'detail': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'user': UserRegistrationSerializer(request.user).data})

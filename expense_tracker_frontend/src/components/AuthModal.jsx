@@ -1,65 +1,80 @@
-import React, { useState } from 'react';
-import { X, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
-import { apiService }  from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { X, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle, User } from 'lucide-react';
+import { apiService } from '../services/api';
 
-export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess }) => {
-    const [mode, setMode] = useState(initiaMode);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');    
-    const [fullName, setFullName] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
+export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) => {
+  const [mode, setMode] = useState(initialMode);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-    if (!isOpen) return null;
+  useEffect(() => {
+    setMode(initialMode);
+    setErrorMsg('');
+  }, [initialMode, isOpen]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setErrorMsg('');
+  if (!isOpen) return null;
 
-        try {
-            if (mode === 'signup') {
-                const res = await apiService.register(email, password, fullName).catch((err) => {
-                    return {
-                        user: {
-                            name: fullName || 'Valued User',
-                            email: email || 'user@expensetracker.ng',
-                        },
-                        message: 'Account created successfully (Django Auth Engine)!',
-                    };
-                });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
 
-                setIsLoading(false);
-                const userObj = res.user || { name: fullname || 'Valued User', email };
-                onAuthSuccess(userObj, res.message || 'Account created successfully!');
-                onclose();
-            }   else {
-                const res = await  apiService.login(email, password).catch((err) => {
-                    return {
-                        user: {
-                            name: email.split('@')[0] || 'User',
-                            email: email || 'user@expensetracker.ng',
-                        },
-                        message: 'Logged in successfully',
-                    };
-                });
+    // Sign-up password validation
+    if (mode === 'signup') {
+      if (password !== confirmPassword) {
+        setErrorMsg('Passwords do not match.');
+        return;
+      }
+      if (password.length < 6) {
+        setErrorMsg('Password must be at least 6 characters long.');
+        return;
+      }
+    }
 
-                setIsLoading(false);
-                const userObj = res.user || { name: email.split('@')[0] || 'User', email };
-                onAuthSuccess(userObj, res.message || 'Welcome back!');
-                onClose();
-            }
-        }   catch (err) {
-            setIsLoading(false);
-            setErrorMsg(err.message || 'Authentication failed. Please check your details.');
-        }
-    };
+    setIsLoading(true);
+
+    try {
+      if (mode === 'signup') {
+        // Direct call to Django backend - no local fallback mock
+        const res = await apiService.register(email, password, fullName);
+
+        setIsLoading(false);
+        onAuthSuccess(res.user, res.token, res.message || 'Account created successfully!');
+        onClose();
+      } else {
+        // Direct call to Django backend - only allows registered users to log in
+        const res = await apiService.login(email, password);
+
+        setIsLoading(false);
+        onAuthSuccess(res.user, res.token, res.message || 'Welcome back!');
+        onClose();
+      }
+    } catch (err) {
+      setIsLoading(false);
+
+      // Extract error detail from Django REST Framework response or thrown error
+      const backendError =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === 'string' ? err.response.data : null) ||
+        err.message ||
+        'Authentication failed. Please check your credentials.';
+
+      setErrorMsg(backendError);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transition-all">
+        
         {/* Header */}
         <div className="bg-slate-900 p-6 text-white relative">
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
           >
@@ -92,6 +107,7 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
             </div>
           )}
 
+          {/* Full Name Field (Sign Up Only) */}
           {mode === 'signup' && (
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -105,12 +121,13 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Adebayo Olumide"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
               </div>
             </div>
           )}
 
+          {/* Email Address Field (Both Modes) */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Email Address
@@ -123,11 +140,12 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
 
+          {/* Password Field (Both Modes) */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Password
@@ -140,10 +158,30 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
+
+          {/* Confirm Password Field (Sign Up Only) */}
+          {mode === 'signup' && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                />
+              </div>
+            </div>
+          )}
 
           {mode === 'signup' && (
             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center space-x-2 text-emerald-800 text-xs font-medium">
@@ -170,7 +208,10 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={() => {
+                    setMode('login');
+                    setErrorMsg('');
+                  }}
                   className="font-bold text-indigo-600 hover:text-indigo-700 underline"
                 >
                   Log In
@@ -181,7 +222,10 @@ export const AuthModal = ({ isOpen, onClose, initiaMode = 'login', onAuthSuccess
                 Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('signup')}
+                  onClick={() => {
+                    setMode('signup');
+                    setErrorMsg('');
+                  }}
                   className="font-bold text-indigo-600 hover:text-indigo-700 underline"
                 >
                   Sign Up
