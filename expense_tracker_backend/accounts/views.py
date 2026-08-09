@@ -9,9 +9,10 @@ from .serializers import UserRegistrationSerializer, LoginSerializer, UserSerial
 
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = UserRegistrationSerializer
 
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
@@ -26,9 +27,10 @@ class UserRegistrationView(APIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
@@ -45,7 +47,7 @@ class LoginView(APIView):
 
             if user:
                 token, _ = Token.objects.get_or_create(user=user)
-                user_data = UserRegistrationSerializer(user).data
+                user_data = self.serializer_class(user).data
                 return Response({
                     'token': token.key,
                     'user': user_data,
@@ -63,6 +65,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serialiZer_class = None
 
     def post(self, request):
         try:
@@ -74,6 +77,8 @@ class LogoutView(APIView):
 
 class CurrentUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserSerializer
 
     def get(self, request):
-        return Response({'user': UserRegistrationSerializer(request.user).data})
+        serializer = self.serializer_class(request.user)
+        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
