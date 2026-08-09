@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle, User } from 'lucide-react';
+import { X, Eye, Eyeoff, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle, User, Eye } from 'lucide-react';
 import { apiService } from '../services/api';
 
 export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) => {
@@ -120,7 +120,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Adebayo Olumide"
+                  placeholder="e.g. Adebayo Johnson"
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
               </div>
@@ -139,7 +139,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="john@examplemail.com"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -150,16 +150,30 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Password
             </label>
+
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
+              <button
+              type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <Eyeoff className="w-4-h-4" />
+                ) : (
+                  <Eye className="w-4-h-4" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -169,16 +183,30 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Confirm Password
               </label>
+
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' :  'password'}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
+                <button
+                type='button'
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className='absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors'
+                aria-label="{showConfirmPassword ? 'Hide password' : 'show password'}"
+                
+                >
+                  {showConfirmPassword ? (
+                    <Eyeoff className="w-4-h-4" />
+                  ) : (
+                    <Eye className="w-4-h-4"/>
+                  )}
+                </button>
               </div>
             </div>
           )}
