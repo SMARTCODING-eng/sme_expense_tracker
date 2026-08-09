@@ -93,7 +93,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             {mode === 'signup'
-              ? 'Start managing your finances with Nigerian Naira (₦) tracking'
+              ? 'Start managing your finances'
               : 'Sign in to access your financial dashboard'}
           </p>
         </div>
