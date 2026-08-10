@@ -16,7 +16,8 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
-            user_data = UserRegistrationSerializer(user).data
+            # Use UserSerializer so the frontend receives complete user details (id, name, email)
+            user_data = UserSerializer(user).data
             return Response({
                 'token': token.key,
                 'user': user_data,
@@ -47,13 +48,13 @@ class LoginView(APIView):
 
             if user:
                 token, _ = Token.objects.get_or_create(user=user)
-                user_data = self.serializer_class(user).data
+                # Use UserSerializer instead of self.serializer_class (LoginSerializer)
+                user_data = UserSerializer(user).data
                 return Response({
                     'token': token.key,
                     'user': user_data,
                     'message': 'Login successful'
                 }, status=status.HTTP_200_OK)
-            
 
             return Response(
                 {'detail': 'Invalid email or password.'}, 
@@ -65,7 +66,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    serialiZer_class = None
+    serializer_class = None
 
     def post(self, request):
         try:

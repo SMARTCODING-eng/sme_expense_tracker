@@ -10,7 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         full_name = f"{obj.first_name} {obj.last_name}".strip()
-        return full_name if  full_name else obj.username
+        return full_name if full_name else obj.username
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -21,10 +22,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password', 'full_name']
 
-    # This method is called when the serializer is validated and creates a new user instance.
     def validate_email(self, value):
+        # Fixed capitalization typo: serializers.ValidationError
         if User.objects.filter(email=value).exists():
-            raise serializers.validationError("Email already exists.")
+            raise serializers.ValidationError("Email already exists.")
+        return value
 
     def create(self, validated_data):
         email = validated_data['email']
@@ -38,21 +40,23 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             first_name = parts[0]
             if len(parts) > 1:
                 last_name = parts[1]
-        username = email.split('@')[0]
-        base_username = username
+
+        base_username = email.split('@')[0]
+        username = base_username
         counter = 1
+
         while User.objects.filter(username=username).exists():
             username = f"{base_username}{counter}"
             counter += 1
 
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-            )
-            return user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        return user
 
 
 class LoginSerializer(serializers.Serializer):
