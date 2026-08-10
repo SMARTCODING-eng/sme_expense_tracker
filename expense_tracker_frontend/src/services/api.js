@@ -2,11 +2,9 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-console.log(import.meta.env.VITE_API_BASE_URL);
-console.log(import.meta.env);
-
-//  * Format JS transaction object into Django REST Framework expected payload
-//  */
+/**
+ * Format JS transaction object into Django REST Framework expected payload
+ */
 function toServerTransaction(tx) {
   return {
     id: tx.id,
@@ -20,7 +18,6 @@ function toServerTransaction(tx) {
     is_recurring: Boolean(tx.isRecurring || tx.is_recurring),
   };
 }
-
 
 function toClientTransaction(tx) {
   return {
@@ -63,17 +60,12 @@ function toServerBudget(b) {
 
 export const apiService = {
 
-  getAuthHeader() {
-
-    // This attach Auth headers if token is stored
-
-    const token = localStorage.getItem('django_auth_toke');
+  getAuthHeaders() {
+    const token = localStorage.getItem('django_auth_token');
     return token ? { 'Authorization': `Token ${token}` } : {};
   },
-  /**
-   * Check connection status to Django backend
-   */
-  async register(email, password, fullname) {
+
+  async register(email, password, fullName) {
     const res = await fetch(`${API_BASE_URL}/accounts/register/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +82,6 @@ export const apiService = {
     }
     return data;
   },
-
 
   async login(email, password) {
     const res = await fetch(`${API_BASE_URL}/accounts/login/`, {
@@ -111,14 +102,14 @@ export const apiService = {
   },
 
   async logout() {
-    const headers = { 'Content-Type': 'application', ...this.getAuthHeaders() };
+    const headers = { 'Content-Type': 'application/json', ...this.getAuthHeaders() };
     try {
       await fetch(`${API_BASE_URL}/accounts/logout/`, {
         method: 'POST',
         headers,
       });
     } catch (e) {
-
+      // Ignore cleanup error if token was invalid
     } finally {
       localStorage.removeItem('django_auth_token');
     }
@@ -133,11 +124,21 @@ export const apiService = {
       method: 'GET',
       headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
     });
+
+    if (!res.ok) {
+      localStorage.removeItem('django_auth_token');
+      return null;
+    }
+
+    return await res.json();
   },
 
   async checkHealth() {
     try {
-      const res = await fetch(`${API_BASE_URL}/categories/`, { method: 'GET' });
+      const res = await fetch(`${API_BASE_URL}/categories/`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
       return res.ok;
     } catch (e) {
       return false;
@@ -148,7 +149,9 @@ export const apiService = {
    * Fetch categories from Django API
    */
   async fetchCategories() {
-    const res = await fetch(`${API_BASE_URL}/categories/`);
+    const res = await fetch(`${API_BASE_URL}/categories/`, {
+      headers: this.getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch categories');
     return await res.json();
   },
@@ -165,7 +168,9 @@ export const apiService = {
 
     const queryString = params.toString();
     const url = `${API_BASE_URL}/transactions/${queryString ? `?${queryString}` : ''}`;
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch transactions');
     const data = await res.json();
     return data.map(toClientTransaction);
@@ -178,7 +183,7 @@ export const apiService = {
     const payload = toServerTransaction(transactionData);
     const res = await fetch(`${API_BASE_URL}/transactions/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -196,7 +201,7 @@ export const apiService = {
     const payload = toServerTransaction(transactionData);
     const res = await fetch(`${API_BASE_URL}/transactions/${id}/`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -213,6 +218,7 @@ export const apiService = {
   async deleteTransaction(id) {
     const res = await fetch(`${API_BASE_URL}/transactions/${id}/`, {
       method: 'DELETE',
+      headers: this.getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to delete transaction');
     return true;
@@ -222,7 +228,9 @@ export const apiService = {
    * Fetch budget configuration from Django API
    */
   async fetchBudget() {
-    const res = await fetch(`${API_BASE_URL}/budget/`);
+    const res = await fetch(`${API_BASE_URL}/budget/`, {
+      headers: this.getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch budget configuration');
     const data = await res.json();
     return toClientBudget(data);
@@ -235,7 +243,7 @@ export const apiService = {
     const payload = toServerBudget(budgetData);
     const res = await fetch(`${API_BASE_URL}/budget/`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to update budget configuration');
@@ -247,7 +255,9 @@ export const apiService = {
    * Fetch analytics summary directly calculated by Django DB
    */
   async fetchAnalytics() {
-    const res = await fetch(`${API_BASE_URL}/analytics/`);
+    const res = await fetch(`${API_BASE_URL}/analytics/`, {
+      headers: this.getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch analytics summary');
     return await res.json();
   }

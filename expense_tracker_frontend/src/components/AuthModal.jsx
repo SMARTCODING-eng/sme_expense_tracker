@@ -141,7 +141,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="john@examplemail.com"
+                placeholder=" e.g. johnexampl@gmail.com"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -203,11 +203,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 aria-label="{showConfirmPassword ? 'Hide password' : 'show password'}"
                 
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4"/>
-                  )}
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4"/>}
                 </button>
               </div>
             </div>
@@ -216,7 +212,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
           {mode === 'signup' && (
             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center space-x-2 text-emerald-800 text-xs font-medium">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Default currency configured to Nigerian Naira (₦ NGN).</span>
+              {/* <span>Default currency configured to Nigerian Naira (₦ NGN).</span> */}
             </div>
           )}
 
@@ -228,7 +224,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
             {isLoading
               ? 'Processing...'
               : mode === 'signup'
-              ? 'Create Account & Enter Dashboard'
+              ? 'Create Account to get Started'
               : 'Sign In to Dashboard'}
           </button>
 
