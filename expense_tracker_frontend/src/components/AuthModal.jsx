@@ -10,6 +10,8 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     setMode(initialMode);
@@ -169,9 +171,9 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4-h-4" />
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <Eye className="w-4-h-4" />
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
@@ -202,9 +204,9 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="w-4-h-4" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-4-h-4"/>
+                    <Eye className="w-4 h-4"/>
                   )}
                 </button>
               </div>
