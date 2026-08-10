@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Eye, Eyeoff, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle, User, Eye } from 'lucide-react';
+import { X, Eye, EyeOff, Lock, Mail, Wallet, CheckCircle, ShieldCheck, AlertCircle, User } from 'lucide-react';
 import { apiService } from '../services/api';
 
 export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) => {
@@ -169,7 +169,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
-                  <Eyeoff className="w-4-h-4" />
+                  <EyeOff className="w-4-h-4" />
                 ) : (
                   <Eye className="w-4-h-4" />
                 )}
@@ -202,7 +202,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 
                 >
                   {showConfirmPassword ? (
-                    <Eyeoff className="w-4-h-4" />
+                    <EyeOff className="w-4-h-4" />
                   ) : (
                     <Eye className="w-4-h-4"/>
                   )}
