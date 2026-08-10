@@ -7,24 +7,72 @@ from django.contrib.auth.models import User
 from .serializers import UserRegistrationSerializer, LoginSerializer, UserSerializer
 
 
+# class UserRegistrationView(APIView):
+#     permission_classes = [permissions.AllowAny]
+#     serializer_class = UserRegistrationSerializer
+
+#     def post(self, request):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             token, _ = Token.objects.get_or_create(user=user)
+#             # Use UserSerializer so the frontend receives complete user details (id, name, email)
+#             user_data = UserSerializer(user).data
+#             return Response({
+#                 'token': token.key,
+#                 'user': user_data,
+#                 'message': 'Account created successfully!'
+#             }, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = UserRegistrationSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
+
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            print("STEP 1: serializer valid")
+
             user = serializer.save()
-            token, _ = Token.objects.get_or_create(user=user)
-            # Use UserSerializer so the frontend receives complete user details (id, name, email)
+
+            print("STEP 2: user created")
+            print("USER:", user)
+            print("USER ID:", user.id)
+
+            token, created = Token.objects.get_or_create(user=user)
+
+            print("STEP 3: token created")
+            print("TOKEN:", token.key)
+
             user_data = UserSerializer(user).data
+
+            print("STEP 4: serializer complete")
+
             return Response({
                 'token': token.key,
                 'user': user_data,
                 'message': 'Account created successfully!'
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        except Exception as e:
+            print("REGISTRATION ERROR:", repr(e))
+
+            return Response(
+                {
+                    'detail': 'Registration failed.',
+                    'error': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
