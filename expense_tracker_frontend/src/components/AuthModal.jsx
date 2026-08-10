@@ -212,7 +212,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
           {mode === 'signup' && (
             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center space-x-2 text-emerald-800 text-xs font-medium">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              {/* <span>Default currency configured to Nigerian Naira (₦ NGN).</span> */}
+              <span>Default currency configured to Nigerian Naira (₦ NGN).</span>
             </div>
           )}
 
