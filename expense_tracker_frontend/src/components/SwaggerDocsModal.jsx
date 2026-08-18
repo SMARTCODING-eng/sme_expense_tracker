@@ -9,7 +9,7 @@ import {
      ShieldCheck, 
      Terminal
  } from 'lucide-react';
- import {Logo} from '.Logo';
+ import {Logo} from './Logo';
 
 export const SwaggerDocsModal = ({ isOpen, onClose }) => {
   const [activeEndpointTab, setActiveEndpointTab] = useState('docs');
