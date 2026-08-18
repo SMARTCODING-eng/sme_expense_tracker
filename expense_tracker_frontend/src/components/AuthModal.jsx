@@ -193,9 +193,6 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
           {/* Divider */}
           <div className="relative flex items-center justify-center my-2">
             <div className="border-t border-slate-200 w-full"></div>
-            <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              or continue with email
-            </span>
             <div className="border-t border-slate-200 w-full"></div>
           </div>
 
@@ -212,7 +209,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Sarah Jenkins"
+                  placeholder="e.g. Smartco John"
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
               </div>
@@ -231,7 +228,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login', onAuthSucces
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. name@company.com"
+                placeholder="e.g. smart@example.com"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
