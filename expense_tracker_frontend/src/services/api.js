@@ -83,6 +83,7 @@ export const apiService = {
     return data;
   },
 
+
   async login(email, password) {
     const res = await fetch(`${API_BASE_URL}/accounts/login/`, {
       method: 'POST',
@@ -100,6 +101,28 @@ export const apiService = {
     }
     return data;
   },
+
+async loginWithGoogle(gmailData) {
+  const res = await fetch(`${API_BASE_URL}/accounts/google/`, {
+    method: 'POST',
+    header: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      email: gmailData.email,
+      full_name: gmailData.fullName || gmailData.name || '',
+      google_id: gmailData.googleId || '',
+      id_token: gmailData.idToken || '',
+    }),
+  }),
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Gmail authentication failed.'); 
+  }
+  const data = await res.json();
+  if (data.token) {
+    localStorage.setItem('django_auth_token', data.token);
+  }
+  return data;
+},
 
   async logout() {
     const headers = { 'Content-Type': 'application/json', ...this.getAuthHeaders() };

@@ -25,25 +25,16 @@ export const Header = ({
               className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs flex items-center justify-center transition-colors"
               title="Return to Landing Page"
             >
-              <WalletCards className="w-6 h-6" />
+               <Logo size="md" variant="light" />
             </button>
             <div>
               <div className="flex items-center space-x-2 flex-wrap">
-                <button
-                  onClick={onGoToLanding}
-                  className="text-xl font-bold text-slate-900 tracking-tight hover:text-indigo-600 transition-colors text-left"
-                >
-                  Expense Tracker
-                </button>
-                <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-100">
-                  Pro
-                </span>
                 
                 {/* Django DRF & PostgreSQL Backend Status Badge */}
                 <button
                   onClick={onSyncBackend}
                   disabled={isSyncing}
-                  title={isBackendConnected ? "Connected to Django REST Framework (PostgreSQL). Click to re-sync." : "Django Backend server offline. Using local persistence fallback. Click to retry connection."}
+                  title={isBackendConnected ? "Connected to Backend (PostgreSQL). Click to re-sync." : "Django Backend server offline."}
                   className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
                     isBackendConnected
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
@@ -51,7 +42,7 @@ export const Header = ({
                   }`}
                 >
                   <Server className="w-3 h-3" />
-                  <span>{isBackendConnected ? 'Django DRF API (PostgreSQL)' : 'Offline Local Fallback'}</span>
+                  <span>{isBackendConnected ? 'Django Server API (PostgreSQL)' : 'Offline'}</span>
                   <RefreshCw className={`w-3 h-3 shrink-0 ${isSyncing ? 'animate-spin text-indigo-600' : 'opacity-70'}`} />
                 </button>
               </div>

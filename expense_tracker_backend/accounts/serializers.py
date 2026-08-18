@@ -23,10 +23,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['email', 'password', 'full_name']
 
     def validate_email(self, value):
-        # Fixed capitalization typo: serializers.ValidationError
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already exists.")
-        return value
+        return value.lower()
 
     def create(self, validated_data):
         email = validated_data['email']
@@ -62,3 +61,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    full_name = serializers.CharField(required=False, allow_blank=True, default='')
+    google_id = serializers.CharField(required=False, allow_blank=True, default='')
+    id_token = serializers.CharField(required=False, allow_blank=True, default='')

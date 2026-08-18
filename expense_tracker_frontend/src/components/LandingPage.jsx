@@ -141,9 +141,10 @@ export const LandingPage = ({
               className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm sm:text-base rounded-2xl shadow-xl shadow-indigo-600/25 transition-all flex items-center justify-center space-x-2.5 group hover:scale-[1.02] active:scale-95"
             >
               <UserPlus className="w-5 h-5 text-indigo-100" />
-              <span>Start Tracking Free</span>
+              <span>Sign Up</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
+          
 
             {/* Secondary Action: Explore Demo */}
             <button
@@ -152,7 +153,7 @@ export const LandingPage = ({
               className="w-full sm:w-auto px-7 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-sm sm:text-base rounded-2xl border border-slate-800 transition-all flex items-center justify-center space-x-2 shadow-lg"
             >
               <Play className="w-4 h-4 fill-current text-slate-300" />
-              <span>Explore Live Demo</span>
+              <span>Explore Demo</span>
             </button>
 
           </div>

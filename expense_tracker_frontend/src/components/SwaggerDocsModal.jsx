@@ -9,6 +9,7 @@ import {
      ShieldCheck, 
      Terminal
  } from 'lucide-react';
+ import {Logo} from '.Logo';
 
 export const SwaggerDocsModal = ({ isOpen, onClose }) => {
   const [activeEndpointTab, setActiveEndpointTab] = useState('docs');
@@ -24,6 +25,7 @@ export const SwaggerDocsModal = ({ isOpen, onClose }) => {
   const endpointsList = [
     { method: 'POST', path: '/api/accounts/register/', desc: 'Register a new user account in Django DB and obtain auth token' },
     { method: 'POST', path: '/api/accounts/login/', desc: 'Authenticate user with email & password and retrieve Token' },
+    { method: 'POST', path: '/api/accounts/google/', desc: 'Authenticate or register user seamlessly with Gmail account' },
     { method: 'POST', path: '/api/accounts/logout/', desc: 'Invalidate current user session and destroy Auth Token' },
     { method: 'GET', path: '/api/accounts/me/', desc: 'Fetch current authenticated user profile details' },
     { method: 'GET / POST', path: '/api/categories/', desc: 'List or seed default categories (Food, Housing, Salary, etc.)' },

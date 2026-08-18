@@ -80,7 +80,14 @@ export default function App() {
   const handleAuthSuccess = (user, message) => {
     setCurrentUser(user);
     setCurrentView('app');
-    showToast(message, 'success');
+    if (isNewUser) {
+      setTransactions([]);
+      localStorage.setItem(LOCAL_STORAGE_KEY_TRANSACTIONS, JSON.stringify([]));
+      showToast('🎉 Welcome! Your new account dashboard is initialized at ₦0.00.', 'success');
+    } else {
+      showToast(message || 'Logged in successfully');
+    }
+    
   };
 
   const handleLogout = async () => {
@@ -117,9 +124,9 @@ export default function App() {
         if (fetchedBudget) {
           setBudget((prev) => ({ ...prev, ...fetchedBudget }));
         }
-        showToast('Synchronized with Django REST Framework (PostgreSQL)!', 'success');
+        showToast('Synchronized wih Backend (Database)!', 'success');
       } else {
-        showToast('Django API offline. Operating in client fallback mode.', 'info');
+        showToast('API offline. Operating in client fallback mode.', 'info');
       }
     } catch (err) {
       console.warn('Backend connection failed:', err);
@@ -167,7 +174,7 @@ export default function App() {
       if (isBackendConnected) {
         try {
           await apiService.updateTransaction(data.id, data);
-          showToast('Updated in PostgreSQL database!');
+          showToast('Updated in Backend database!');
         } catch (err) {
           console.error('API update failed:', err);
           showToast('Updated locally (API error)', 'info');
@@ -187,7 +194,7 @@ export default function App() {
           const created = await apiService.createTransaction(data);
           // Replace temp item with server response
           setTransactions((prev) => prev.map((t) => (t.id === tempId ? created : t)));
-          showToast('Saved to PostgreSQL database!');
+          showToast('Saved to Backend database!');
         } catch (err) {
           console.error('API create failed:', err);
           showToast('Saved locally (API error)', 'info');
@@ -205,7 +212,7 @@ export default function App() {
       if (isBackendConnected) {
         try {
           await apiService.deleteTransaction(id);
-          showToast('Deleted from PostgreSQL database', 'info');
+          showToast('Deleted from database', 'info');
         } catch (err) {
           console.error('API delete failed:', err);
           showToast('Removed locally', 'info');
@@ -223,7 +230,7 @@ export default function App() {
     if (isBackendConnected) {
       try {
         await apiService.updateBudget(updated);
-        showToast('Budget saved to PostgreSQL database!');
+        showToast('Budget saved database!');
       } catch (err) {
         console.error('API budget update failed:', err);
         showToast('Budget updated locally', 'info');
