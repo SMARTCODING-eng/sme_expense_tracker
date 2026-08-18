@@ -113,6 +113,7 @@ async loginWithGoogle(gmailData) {
       id_token: gmailData.idToken || '',
     }),
   });
+  
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Gmail authentication failed.'); 
@@ -132,7 +133,7 @@ async loginWithGoogle(gmailData) {
         headers,
       });
     } catch (e) {
-      // Ignore cleanup error if token was invalid
+      
     } finally {
       localStorage.removeItem('django_auth_token');
     }
