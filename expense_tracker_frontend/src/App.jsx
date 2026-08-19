@@ -83,12 +83,14 @@ export default function App() {
     if (isNewUser) {
       setTransactions([]);
       localStorage.setItem(LOCAL_STORAGE_KEY_TRANSACTIONS, JSON.stringify([]));
-      showToast('🎉 Welcome! Your new account dashboard is initialized at ₦0.00.', 'success');
+      showToast('🎉 Welcome! account dashboard is initialized at ₦0.00.', 'success');
     } else {
       showToast(message || 'Logged in successfully');
     }
     
   };
+  handleAuthSuccess(newUserObjects, 'Account created!', true);
+  handleAuthSuccess(existingUserObject, 'Logged in successfully');
 
   const handleLogout = async () => {
     try {
