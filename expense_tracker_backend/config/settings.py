@@ -43,6 +43,14 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
+# Getting google details from Environment variable 
+
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URL = os.environ.get('GOOGLE_REDIRECT_URL')
+FRONTEND_URL = os.environ.get('FRONTEND_URL')
+ 
+
 # Application definition
 
 INSTALLED_APPS = [
