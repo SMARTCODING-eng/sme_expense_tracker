@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusCircle, RotateCcw, WalletCards, Settings, Server, RefreshCw, Home, FileCode, LogOut } from 'lucide-react';
+import {Logo} from './Logo';
 
 export const Header = ({
   budget,
