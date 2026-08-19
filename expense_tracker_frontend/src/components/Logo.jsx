@@ -32,7 +32,7 @@ export const Logo = ({
 
     return (
         <div className={`inline-flex items-center space-x-2.5 select-none ${className}`}>
-            <div className={`relative ${currentSize-icon} shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-slate-950 shadow-lg shadow-smerald-500/25 ring-2 ring-emerald-400/30 overflow-hidden group`}>
+            <div className={`relative ${currentSize.icon} shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-slate-950 shadow-lg shadow-smerald-500/25 ring-2 ring-emerald-400/30 overflow-hidden group`}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 <span className={`${currentSize.symbol} text-white drop-shadow-md tracking-tighter leading-none font-sans`}>
                     S
