@@ -77,29 +77,58 @@ export default function App() {
     setIsAuthModalOpen(true);
   };
 
+  
+
   const handleAuthSuccess = (user, message, isNewUser = false) => {
     setCurrentUser(user);
     setCurrentView('app');
+
+    const userStorageKey = `expense_tracker_transactions_${user.id}`;
+
     if (isNewUser) {
       setTransactions([]);
       localStorage.setItem(LOCAL_STORAGE_KEY_TRANSACTIONS, JSON.stringify([]));
       showToast('🎉 Welcome! account dashboard is initialized at ₦0.00.', 'success');
     } else {
-      showToast(message || 'Logged in successfully');
+      try {
+        const saveData = localStorage.getItem(userStorageKey);
+        if (saveData !== null) {
+          setTransactions(JSON.parse(savedData));
+
+        } else if (isBackendConnected) {
+          apiService.fetchTransactions().then((txs) => {
+            if (Array.isArray(txs)) setTransactions(txs);
+          })
+        }
+      } catch (e) {
+        console.error('Error restoring user data', e);
+      }
+      showToast(message || 'Logged in succeffully!', 'success');
     }
     
   };
   
-
+  const [isLoggingOut, setisLoggingOut] = useState(false);
   const handleLogout = async () => {
+    setisLoggingOut(true);
+    showToast('Logging out...', 'info');
+
     try {
       await apiService.logout();
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      setCurrentUser(null);
+      setCurrentView('landing');
+      showToast('Logged out successfully!.', 'info');
+
     } catch (e) {
       console.warn('Logout error:', e);
+      showToast('Network error: Unable to connect to the internet. please try again.', 'erreo');
+    }finally {
+      setisLoggingOut(false);
     }
-    setCurrentUser(null);
-    setCurrentView('landing');
-    showToast('Logged out successfully!.', 'info');
+   
   };
 
   const handleExploreDemo = () => {
@@ -141,9 +170,29 @@ export default function App() {
 
   useEffect(() => {
     syncWithBackend();
+
     apiService.getCurrentUser().then((user) => {
       if (user) {
         setCurrentUser(user);
+
+        const userTxkey = `expense_tracker_transaction_$(user.id)`;
+        const savedTx = localStorage.getItem(userTxKey);
+        if (savedTx !== null) {
+          try {
+            setTransactions(JSON.parse(savedTx));
+          } catch (e) {
+            console.error('Error parsing saved user data:', e)
+          }
+        }
+        const userBudgetKey = `expense_tracker_budget_$(user.id)`;
+        const savedBudget = localStorage.getItem(userBudgetKey);
+        if (savedBudget !== null) {
+          try {
+            setBudget(JSON.parse(savedBudget));
+          } catch (e) {
+            console.error('Error parsing saved budget:', e);
+          }
+        }
       }
     }).catch(() => {});
   }, [syncWithBackend]);
@@ -151,19 +200,27 @@ export default function App() {
   // Sync local changes to localStorage for offline persistence
   useEffect(() => {
     try {
+      const storageKey = currentUser?.id
+      ? `expense_tracker_transactions_${currentUser.id}`
+      : LOCAL_STORAGE_KEY_TRANSACTIONS;
+
       localStorage.setItem(LOCAL_STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
     } catch (e) {
       console.error('Error saving transactions to localStorage:', e);
     }
-  }, [transactions]);
+  }, [transactions, currentUser]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY_BUDGET, JSON.stringify(budget));
+      const storageKey = currentUser?.id
+      ? `expense_tracker_budget_${currentUser.id}`
+      :LOCAL_STORAGE_KEY_BUDGET;
+
+      localStorage.setItem(storageKey, JSON.stringify(budget));
     } catch (e) {
       console.error('Error saving budget to localStorage:', e);
     }
-  }, [budget]);
+  }, [budget, currentUser]);
 
   // Transaction Actions (with Django API integration)
   const handleSaveTransaction = async (data) => {
