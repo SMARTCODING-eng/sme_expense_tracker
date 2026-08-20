@@ -77,7 +77,7 @@ export default function App() {
     setIsAuthModalOpen(true);
   };
 
-  const handleAuthSuccess = (user, message) => {
+  const handleAuthSuccess = (user, message, isNewUser = false) => {
     setCurrentUser(user);
     setCurrentView('app');
     if (isNewUser) {
@@ -329,6 +329,7 @@ export default function App() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+       
         {/* Warm Welcome Banner Header Card */}
         <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-emerald-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
