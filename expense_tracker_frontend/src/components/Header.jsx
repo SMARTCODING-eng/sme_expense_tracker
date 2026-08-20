@@ -60,10 +60,10 @@ export const Header = ({
             <button
               onClick={onGoToLanding}
               className="inline-flex items-center space-x-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-200"
-              title="Return to Landing Page"
+              title="Return to Home Page"
             >
               <Home className="w-3.5 h-3.5 text-slate-500" />
-              <span>Landing Page</span>
+              <span>Home</span>
             </button>
 
             {/* Swagger API Button */}

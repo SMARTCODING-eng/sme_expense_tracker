@@ -98,7 +98,7 @@ export default function App() {
       console.warn('Logout error:', e);
     }
     setCurrentUser(null);
-    setCurrentView('Landing');
+    setCurrentView('landing');
     showToast('Logged out successfully!.', 'info');
   };
 
