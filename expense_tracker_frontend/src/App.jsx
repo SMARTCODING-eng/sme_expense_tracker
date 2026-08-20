@@ -89,8 +89,7 @@ export default function App() {
     }
     
   };
-  handleAuthSuccess(newUserObjects, 'Account created!', true);
-  handleAuthSuccess(existingUserObject, 'Logged in successfully');
+  
 
   const handleLogout = async () => {
     try {
@@ -194,7 +193,7 @@ export default function App() {
       if (isBackendConnected) {
         try {
           const created = await apiService.createTransaction(data);
-          // Replace temp item with server response
+         
           setTransactions((prev) => prev.map((t) => (t.id === tempId ? created : t)));
           showToast('Saved to Backend database!');
         } catch (err) {
