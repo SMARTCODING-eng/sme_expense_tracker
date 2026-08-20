@@ -98,7 +98,8 @@ export default function App() {
       console.warn('Logout error:', e);
     }
     setCurrentUser(null);
-    showToast('Logged out successfully from Django Accounts session.', 'info');
+    setCurrentView('Landing');
+    showToast('Logged out successfully!.', 'info');
   };
 
   const handleExploreDemo = () => {
