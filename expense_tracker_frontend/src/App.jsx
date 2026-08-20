@@ -303,6 +303,7 @@ export default function App() {
           isBackendConnected={isBackendConnected}
           currentUser={currentUser}
           onLogout={handleLogout}
+          onGoToDashboard={() => setCurrentView('app')}
         />
 
         <AuthModal

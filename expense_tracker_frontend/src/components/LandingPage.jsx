@@ -24,6 +24,7 @@ export const LandingPage = ({
   onOpenSwaggerDocs,
   currentUser,
   onLogout,
+  onGoToDashboard
 }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -62,9 +63,14 @@ export const LandingPage = ({
           <div className="flex items-center space-x-2 sm:space-x-3">
             {currentUser ? (
               <>
-                <span className="text-xs text-indigo-300 font-semibold hidden sm:inline-block bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
-                  {currentUser.name || currentUser.username || currentUser.email}
-                </span>
+                <button
+                  onClick={onGoToDashboard}
+                  title="Return to Dashboard"
+                  className="px-3.5 py-1.5 bg-slate-8 hover:bg-slate-700 text-blue-400 font-semibold text-xs rounded border border-slate-700 hover:border-blue-500/50 transition-all cursor-pointer flex items-center space-x-1"
+                
+                >
+                  <span>{currentUser.username || currentUser.name || 'user'}</span> 
+                </button>
 
                 <button
                   type="button"
