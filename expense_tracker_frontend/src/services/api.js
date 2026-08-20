@@ -25,7 +25,7 @@ function toClientTransaction(tx) {
     title: tx.title,
     amount: parseFloat(tx.amount),
     type: tx.type,
-    category: tx.category_detail ? tx.category_detail.id : (tx.category_id || tx.category || 'other_expense'),
+    category: tx.category_detail ? tx.category_detail.id : (typeof tx.category === 'object'? tx.category.id : (tx.category || 'other_expense')),
     categoryDetail: tx.category_detail || null,
     date: tx.date,
     paymentMethod: tx.payment_method || 'card',
@@ -105,22 +105,25 @@ export const apiService = {
 async loginWithGoogle(gmailData) {
   const res = await fetch(`${API_BASE_URL}/accounts/google/`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email: gmailData.email,
       full_name: gmailData.fullName || gmailData.name || '',
       google_id: gmailData.googleId || '',
-      id_token: gmailData.idToken || '',
+      id_token: gmailData.idToken || gmailData.tokenId || '',
     }),
   });
   
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Gmail authentication failed.'); 
+    const errorMessage = err.datail || err.non_field_errors?.[0] || 'Gmail authentication failed.';
+    throw new Error(errorMessage);
   }
   const data = await res.json();
-  if (data.token) {
-    localStorage.setItem('django_auth_token', data.token);
+
+  const token = data.token || data.access ||data.key;
+  if (token) {
+    localStorage.setItem('django_auth_token', token);
   }
   return data;
 },
